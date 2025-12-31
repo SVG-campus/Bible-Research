@@ -1,0 +1,12 @@
+pandas
+numpy
+scikit-learn
+xgboost
+torch              # For attribution (UAV)
+scipy
+ruptures           # For regime change detection (UDF)
+networkx           # For graph theory
+spacy              # Deep NLP
+transformers       # Hugging Face LLMs
+matplotlib
+seaborn
