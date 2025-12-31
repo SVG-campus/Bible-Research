@@ -34,7 +34,7 @@ class UnifiedOptimizer:
     def bayesian_optimize(self, n_init=5, n_iter=20, maximize=True, verbose=True):
         if verbose:
             print("🔵 BAYESIAN OPTIMIZATION")
-        
+
         X, y = [], []
         sampler = qmc.LatinHypercube(d=len(self.param_names))
         sample = sampler.random(n=n_init)
@@ -65,27 +65,27 @@ class UnifiedOptimizer:
                 x_dict = {}
                 for j, (name, (low, high)) in enumerate(self.bounds.items()):
                     x_dict[name] = low + candidate[j] * (high - low)
-                
+
                 x_array = self._dict_to_array(x_dict).reshape(1, -1)
                 mu, sigma = gp.predict(x_array, return_std=True)
-                
+
                 if maximize:
                     improvement = mu - best_value
                     Z = improvement / (sigma + 1e-9)
                 else:
                     improvement = best_value - mu
                     Z = improvement / (sigma + 1e-9)
-                
+
                 ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
-                
+
                 if ei > best_acq:
                     best_acq = ei
                     best_candidate = x_dict
-            
+
             value = self._evaluate(best_candidate, 'bayesian')
             X.append(self._dict_to_array(best_candidate))
             y.append(value)
-            
+
             if (maximize and value > best_value) or (not maximize and value < best_value):
                 best_value = value
                 if verbose: print(f" BO Iter {i+1}: {value:.6f} ⭐")

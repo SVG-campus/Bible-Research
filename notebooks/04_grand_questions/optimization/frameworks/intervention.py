@@ -26,7 +26,7 @@ class PlatinumCausalEngine:
         self.models = {}
         self.model_types = {}
         self.residuals = pd.DataFrame(index=self.df.index)
-        
+
         if self.verbose: print("⚙️ FITTING ADAPTIVE MODELS...")
         self._fit_adaptive_models()
         self._compute_residuals()
@@ -55,10 +55,10 @@ class PlatinumCausalEngine:
             for train_idx, val_idx in kf.split(X):
                 X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
                 y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
-                
+
                 lin = LinearRegression().fit(X_train, y_train)
                 lin_scores.append(lin.score(X_val, y_val))
-                
+
                 xg = xgb.XGBRegressor(n_estimators=50, max_depth=4, device=DEVICE, enable_categorical=True)
                 xg.fit(X_train, y_train)
                 xgb_scores.append(xg.score(X_val, y_val))
@@ -73,7 +73,7 @@ class PlatinumCausalEngine:
                 self.models[node] = LinearRegression()
                 self.models[node].fit(X, y)
                 self.model_types[node] = "Linear (Robust)"
-            
+
             if self.verbose:
                 print(f" - {node}: Selected {self.model_types[node]} (R2: {max(avg_lin, avg_xgb):.3f})")
 
@@ -87,7 +87,7 @@ class PlatinumCausalEngine:
 
     def simulate_intervention(self, treatment: dict, target: str, n_boot=0) -> dict:
         mu = self._run_simulation_pass(self.df, self.residuals, treatment, target)
-        
+
         result = {
             "E_y_do": mu,
             "std_error": 0.0,
@@ -103,11 +103,11 @@ class PlatinumCausalEngine:
                 df_boot = self.df.loc[res_boot.index].copy()
                 val = self._run_simulation_pass(df_boot, res_boot, treatment, target)
                 estimates.append(val)
-            
+
             result["ci_lower"] = np.percentile(estimates, 2.5)
             result["ci_upper"] = np.percentile(estimates, 97.5)
             result["std_error"] = np.std(estimates)
-        
+
         return result
 
     def _run_simulation_pass(self, df_base, res_base, treatment, target):
